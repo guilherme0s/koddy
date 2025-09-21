@@ -2,3 +2,6 @@ rootProject.name = 'koddy'
 
 include(':launcher')
 include(':ui')
+include(':native')
+include(':native-loader')
+include(':input')

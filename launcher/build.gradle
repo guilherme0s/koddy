@@ -4,8 +4,10 @@ plugins {
 
 application {
     mainClass.set("koddy.launcher.KoddyLauncher")
+    applicationDefaultJvmArgs = ['--enable-native-access=ALL-UNNAMED']
 }
 
 dependencies {
     implementation project(':ui')
+    implementation project(':input')
 }

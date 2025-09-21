@@ -1,0 +1,62 @@
+plugins {
+    id 'cpp-library'
+}
+
+library {
+    // Build a shared library suitable for JNI loading
+    linkage = [Linkage.SHARED]
+    targetMachines = [
+            machines.linux.x86_64,
+            machines.windows.x86_64,
+            machines.macOS.x86_64
+    ]
+}
+
+// Helper to detect OS-specific JNI include directory name
+static def osIncludeDirName() {
+    def osName = System.getProperty('os.name').toLowerCase()
+    if (osName.contains('win')) {
+        return 'win32'
+    }
+    if (osName.contains('mac') || osName.contains('darwin')) {
+        return 'darwin'
+    }
+    return 'linux'
+}
+
+// Obtain JDK home to locate JNI headers
+Provider<Directory> jdkHome = providers.provider {
+    def envHome = System.getenv('JAVA_HOME')
+    if (envHome) {
+        return layout.projectDirectory.dir(envHome)
+    }
+    // Fallback to java.home (may point to a JRE within JDK)
+    def jh = System.getProperty('java.home')
+    def dir = new File(jh)
+    // If it looks like a JRE folder, go one level up to the JDK root
+    if (new File(dir, 'include').exists()) {
+        return layout.projectDirectory.dir(dir.absolutePath)
+    }
+    return layout.projectDirectory.dir(dir.parentFile.absolutePath)
+}
+
+// Configure compiler includes and language standard
+tasks.withType(CppCompile).configureEach {
+    def osDir = osIncludeDirName()
+    def includeRoot = new File(jdkHome.get().asFile, 'include')
+    def includeOs = new File(includeRoot, osDir)
+
+    // Add JNI include paths
+    compilerArgs.addAll([
+            "-I${includeRoot.absolutePath}",
+            "-I${includeOs.absolutePath}"
+    ])
+
+    // Set C++ standard flags based on OS
+    def osName = System.getProperty('os.name').toLowerCase()
+    if (osName.contains('win')) {
+        compilerArgs.add('/std:c++17')
+    } else {
+        compilerArgs.add('-std=c++17')
+    }
+}

@@ -11,7 +11,7 @@ allprojects {
     }
 }
 
-subprojects {
+configure(subprojects.findAll { it -> it.name != "native" }) {
     apply plugin: 'java-library'
 
     java {

@@ -1,0 +1,10 @@
+// Copy the shared library built by :native into this module's resources
+tasks.named('processResources') {
+    dependsOn(':native:assemble')
+    from(project(':native').layout.buildDirectory.dir('lib')) {
+        include '**/*.so', '**/*.dll', '**/*.dylib'
+        // Flatten nested paths and place directly under 'natives/'
+        eachFile { details -> details.path = 'natives/' + details.name }
+        includeEmptyDirs = false
+    }
+}
