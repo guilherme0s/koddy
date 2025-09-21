@@ -1,0 +1,11 @@
+plugins {
+    id 'application'
+}
+
+application {
+    mainClass.set("koddy.launcher.KoddyLauncher")
+}
+
+dependencies {
+    implementation project(':ui')
+}
